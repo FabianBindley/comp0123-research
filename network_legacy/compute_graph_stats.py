@@ -1,4 +1,4 @@
-from generate_graphs import load_graph
+from network.generate_graphs import load_graph
 import networkx as nx
 from networkx.algorithms import community
 import matplotlib.pyplot as plt
