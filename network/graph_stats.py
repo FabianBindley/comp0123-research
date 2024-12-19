@@ -167,8 +167,47 @@ def compute_power_law_coefficient_ccdf(graph, node_type, city):
     print(f"R² Value: {r_squared:.4f}")
 
     return power_law_exponent, r_squared
-    
-    
+
+def compute_hits_scores(city, graph, top_n):
+    # Compute HITS scores
+    hubs, authorities = nx.hits(graph, normalized=True)
+
+    # Filter guests and hosts separately
+    guest_hub_scores = {node: score for node, score in hubs.items() if node.endswith("g")}
+    host_authority_scores = {node: score for node, score in authorities.items() if node.endswith("h")}
+
+    # Sort nodes by their scores
+    top_guests = sorted(guest_hub_scores.items(), key=lambda x: x[1], reverse=True)[:top_n]
+    top_hosts = sorted(host_authority_scores.items(), key=lambda x: x[1], reverse=True)[:top_n]
+
+    print(f"\nTop {top_n} Guests (Hubs) in {city}:")
+    for guest, score in top_guests:
+        print(f"{guest}: {score:.4f}")
+
+    print(f"\nTop {top_n} Hosts (Authorities) in {city}:")
+    for host, score in top_hosts:
+        print(f"{host}: {score:.4f}")
+
+    # Plot score distributions as line plots
+    plot_score_line(sorted(guest_hub_scores.values(), reverse=True), "Hub Scores", city, "guests")
+    plot_score_line(sorted(host_authority_scores.values(), reverse=True), "Authority Scores", city, "hosts")
+
+
+def plot_score_line(scores, score_type, city, node_type):
+    """
+    Plot the sorted scores as a line chart.
+    """
+    plt.figure(figsize=(10, 6))
+    plt.plot(range(1, len(scores) + 1), scores, marker=".", linestyle="-", color="skyblue", alpha=0.7)
+    plt.xlabel("Rank")
+    plt.ylabel(f"{score_type}")
+    plt.title(f"{city} | {node_type.capitalize()} {score_type} Distribution")
+    plt.grid(visible=True, which="major", linestyle="--", linewidth=0.5)
+    plt.tight_layout()
+    plt.savefig(f"data/{city}/{node_type}_{score_type.replace(' ', '_').lower()}_line_distribution.png", format="png", dpi=300)
+    plt.close()
+
+
 def compute_guest_host_stats(city, graph, df):
     print("=================================")
     print(city)
@@ -225,13 +264,15 @@ def compute_guest_host_stats(city, graph, df):
     superhosts_percent_hosts = superhosts/num_hosts * 100
 
     print(f"Superhosts: {superhosts} % of hosts: {superhosts_percent_hosts}")
+    
+    compute_hits_scores(city, graph, 10)
 
     df.loc[len(df)] = [city,graph.number_of_nodes(), num_guests, num_hosts, graph.number_of_edges(), mean_host_in_degree, med_host_in_degree, max_host_in_degree, mean_guest_out_degree, med_guest_out_degree, max_guest_out_degree, mean_edge_weight, edges_weight_greater_1, guest_power_law_exponent, guest_power_law_r2, host_power_law_exponent, host_power_law_r2, superhosts, superhosts_percent_hosts ]
 
 if __name__ == "__main__":
     df = pd.DataFrame(columns=['city','num_nodes','guests','hosts','edges','mean_host_in_degree','median_host_in_degree','max_host_in_degree','mean_guest_out_degree','median_guest_out_degree','max_guest_out_degree','mean_edge_weight','edges_weight_greater_1','guest_power_law_exponent','guest_power_law_r2','host_power_law_exponent','host_power_law_r2', 'superhosts', 'superhosts_percent_hosts'])
     cities= ["san-francisco","san-diego","seattle","london",]
-    #cities= ["san-francisco"]
+    cities= ["san-francisco"]
     for city in cities:
         guest_host = load_graph(city, "guest_host")
         compute_guest_host_stats(city, guest_host, df)

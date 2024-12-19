@@ -18,6 +18,8 @@ def generate_guest_host(city):
 
     # Limit to 100 stays
     #stays = stays[:100]
+    #stays = stays.sample(frac=1)
+    #stays = stays[:20]
 
     # Iterate over the stays and generate the Guest - Host graph
     # Nodes have id: guest_id, host_id 
