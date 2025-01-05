@@ -281,4 +281,4 @@ if __name__ == "__main__":
         compute_guest_host_stats(city, guest_host, df)
 
 
-    df.to_csv("data/barabasi_albert_stats_output.csv", encoding='utf-8', index=False)
+    df.to_csv("data/barabasi_albert/stats_output.csv", encoding='utf-8', index=False)
