@@ -7,6 +7,7 @@ import random
 import numpy as np
 from scipy.stats import linregress
 import pandas as pd
+import pickle
 
 
 def compute_and_plot_degree_distribution(graph, node_type, city):
@@ -51,7 +52,7 @@ def plot_degree_distribution(x, y, node_type, city):
     plt.legend(loc="best")
 
     # Save the plot
-    plt.savefig(f"data/{city}/{type_label.lower()}_{dist_type}_degree_distribution.png", format="png", dpi=300)
+    plt.savefig(f"data/{city}/barabasi_albert/{type_label.lower()}_{dist_type}_degree_distribution.png", format="png", dpi=300)
     plt.close()
 
 
@@ -114,7 +115,7 @@ def plot_ccdf(x, y, log_x, log_y, slope, intercept, r_squared, node_type, city):
     plt.minorticks_off()  # Remove minor ticks
 
     # Save the plot
-    plt.savefig(f"data/{city}/{type_label.lower()}_{dist_type}_ccdf_fit.png", format="png", dpi=300)
+    plt.savefig(f"data/{city}/barabasi_albert/{type_label.lower()}_{dist_type}_ccdf_fit.png", format="png", dpi=300)
     plt.close()
 
 
@@ -211,7 +212,7 @@ def plot_score_line(scores, score_type, city, node_type):
     plt.title(f"{city} | {node_type.capitalize()} {score_type} Distribution")
     plt.grid(visible=True, which="major", linestyle="--", linewidth=0.5)
     plt.tight_layout()
-    plt.savefig(f"data/{city}/{node_type}_{score_type.replace(' ', '_').lower()}_line_distribution.png", format="png", dpi=300)
+    plt.savefig(f"data/{city}/barabasi_albert/{node_type}_{score_type.replace(' ', '_').lower()}_line_distribution.png", format="png", dpi=300)
     plt.close()
 
 
@@ -221,9 +222,6 @@ def compute_guest_host_stats(city, graph, df):
     print(f"Nodes: {graph.number_of_nodes()}")
     print(f"Edges: {graph.number_of_edges()}")
 
-    # Count edges where weight > 1
-    edges_weight_greater_1 = sum(1 for _, _, data in graph.edges(data=True) if data.get('weight', 0) > 1)
-    print(f"Edges with weight > 1: {edges_weight_greater_1}")
     
 
 
@@ -256,10 +254,6 @@ def compute_guest_host_stats(city, graph, df):
     print(f"Max Guest Out-Degree: {max_guest_out_degree}")
 
 
-    edge_weights = [data['weight'] for _, _, data in graph.edges(data=True)]
-    mean_edge_weight = round(sum(edge_weights) / len(edge_weights),2)
-    print(f"Average Edge Weight: {mean_edge_weight}")
-    print(f"Max Edge Weight: {max(edge_weights)}")
 
     print("In Degree Distribution")
     guest_power_law_exponent, guest_power_law_r2 = compute_and_plot_degree_distribution(graph, "g", city)
@@ -267,26 +261,24 @@ def compute_guest_host_stats(city, graph, df):
     print("Out Degree Distribution")
     host_power_law_exponent, host_power_law_r2 = compute_and_plot_degree_distribution(graph, "h", city)
 
-    superhosts = sum(1 for node in graph.nodes if node[-1] == "h" and graph.nodes[node]['host_is_superhost'] is True)
-    superhosts_percent_hosts = superhosts/num_hosts * 100
-
-    print(f"Superhosts: {superhosts} % of hosts: {superhosts_percent_hosts}")
     
     compute_hits_scores(city, graph, 30)
     clustering_coefficients = bipartite.clustering(graph)
     max_clustering_coefficient = max(clustering_coefficients.values())
     print(f"Max Clustering coefficient: {max_clustering_coefficient}")
 
-    df.loc[len(df)] = [city,graph.number_of_nodes(), num_guests, num_hosts, graph.number_of_edges(), mean_host_in_degree, med_host_in_degree, max_host_in_degree, mean_guest_out_degree, med_guest_out_degree, max_guest_out_degree, mean_edge_weight, edges_weight_greater_1, guest_power_law_exponent, guest_power_law_r2, host_power_law_exponent, host_power_law_r2, superhosts, superhosts_percent_hosts, max_clustering_coefficient]
+    df.loc[len(df)] = [city,graph.number_of_nodes(), num_guests, num_hosts, graph.number_of_edges(), mean_host_in_degree, med_host_in_degree, max_host_in_degree, mean_guest_out_degree, med_guest_out_degree, max_guest_out_degree, guest_power_law_exponent, guest_power_law_r2, host_power_law_exponent, host_power_law_r2,  max_clustering_coefficient]
 
+def load_graph(city, type):
+    return pickle.load(open(f"data/{city}/barabasi_albert/guest_host_barabasi_albert.pickle", "rb"))
 
 if __name__ == "__main__":
-    df = pd.DataFrame(columns=['city','num_nodes','guests','hosts','edges','mean_host_in_degree','median_host_in_degree','max_host_in_degree','mean_guest_out_degree','median_guest_out_degree','max_guest_out_degree','mean_edge_weight','edges_weight_greater_1','guest_power_law_exponent','guest_power_law_r2','host_power_law_exponent','host_power_law_r2', 'superhosts', 'superhosts_percent_hosts', 'max_clustering_coefficient'])
+    df = pd.DataFrame(columns=['city','num_nodes','guests','hosts','edges','mean_host_in_degree','median_host_in_degree','max_host_in_degree','mean_guest_out_degree','median_guest_out_degree','max_guest_out_degree','guest_power_law_exponent','guest_power_law_r2','host_power_law_exponent','host_power_law_r2',  'max_clustering_coefficient'])
     cities= ["san-francisco","san-diego","seattle","london",]
-    #cities= ["san-francisco"]
+    cities= ["san-francisco"]
     for city in cities:
         guest_host = load_graph(city, "guest_host")
         compute_guest_host_stats(city, guest_host, df)
 
 
-    df.to_csv("data/stats_output.csv", encoding='utf-8', index=False)
+    df.to_csv("data/barabasi_albert_stats_output.csv", encoding='utf-8', index=False)
