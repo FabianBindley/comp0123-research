@@ -60,8 +60,10 @@ def print_graph(graph):
     print(f"Superhosts: {counter}")
     
 
-def load_graph(city, type):
-    return pickle.load(open(f"data/{city}/{type}.pickle", "rb"))
+def load_graph(city, type, network_type):
+    if not network_type:
+        return pickle.load(open(f"data/{city}/{type}.pickle", "rb"))
+    return pickle.load(open(f"data/{city}/{network_type}/{type}.pickle", "rb"))
 
 def export_graphml(city, type, graph):
     print("Exporting graph in graphml format")

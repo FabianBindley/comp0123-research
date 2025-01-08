@@ -1,7 +1,8 @@
 # comp0123-research
-Research Project involving Airbnb networks for COMP0123 
+Research Project investigating Airbnb guest-host networks
 
-# Creating the guest-host network
-Create a pandas dataframe for listings.csv and reviews.csv each
-Create a pandas dataframe from these - with reviewer_id, review_id, listing_id, host_id
-Read in Reviews.csv 
+# Instructions
+1) Download and extract the relevant city detailed listings and reviews file from https://insideairbnb.com/get-the-data/ in the Data/{city-name} directory eg: Data/san-francisco
+2) Create a Python virtual environment and install the 
+3) Run the network/generate_graphs.py script to generate the graphs for the selected city
+4) Analyse the graphs with network/graph_stats.py and visualise a small portion with network/visualise_graphs.py

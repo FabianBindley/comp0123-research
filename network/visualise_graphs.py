@@ -30,8 +30,11 @@ def edge_sampling_bounded(graph, num_edges, host_lower_bound, host_upper_bound, 
         if len(candidate_edges) == num_edges:
             break
     
-    limited_edges = candidate_edges
-    #limited_edges = candidate_edges[:num_edges]
+    # Step 3: Sort edges by host ID to group edges by hosts
+    candidate_edges = sorted(candidate_edges, key=lambda edge: edge[1])
+
+    # Limit the number of edges to num_edges
+    limited_edges = candidate_edges[:num_edges]
 
 
     # Step 4: Create a new graph with the sampled edges
@@ -46,13 +49,29 @@ def visualize_bipartite_graph(graph, num_edges):
 
 
     # Perform sampling based on degree
-    sampled_graph = edge_sampling_bounded(graph, num_edges, 3, 10, 1, 4)
+    sampled_graph = edge_sampling_bounded(graph, num_edges, 5, 15, 1, 25)
 
     
     # Separate the two sets (guests and hosts)
-    guests = [node for node in sampled_graph.nodes() if node.endswith("_g")]
     hosts = [node for node in sampled_graph.nodes() if node.endswith("_h")]
     hosts_sorted = sorted(hosts, key=lambda h: sampled_graph.in_degree(h))
+
+
+    guests = []
+    for node in sampled_graph.nodes:
+        if node.endswith("_g"):
+            hosts = list(sampled_graph.successors(node))
+            positions = list(map(lambda host: hosts_sorted.index(host), hosts))
+            print(hosts)
+            positions.sort(reverse=True)
+            print(positions)
+            guests.append((node, positions))
+
+    guests_sorted = sorted(guests, key=lambda guest: guest[1], reverse=False)
+    print(guests_sorted)
+    guests = list(map(lambda guest: guest[0], guests_sorted))
+    #guests = [node for node in sampled_graph.nodes() if node.endswith("_g")]
+
 
       # Scale vertical positions for better spacing
     max_y = max(len(guests), len(hosts_sorted))
@@ -64,7 +83,9 @@ def visualize_bipartite_graph(graph, num_edges):
     pos = {**pos_guests, **pos_hosts}
     
     # Draw the graph
-    plt.figure(figsize=(6, 12))
+    plt.figure(figsize=(8, 14))
+    plt.subplots_adjust(top=0.85)  # Adjust space for the title
+
     nx.draw(
         sampled_graph,
         pos,
@@ -79,8 +100,14 @@ def visualize_bipartite_graph(graph, num_edges):
     plt.text(-0.2, len(guests) / 2, "Guests", fontsize=12, color="skyblue", ha="center", va="center", rotation=90)
     plt.text(1.2, len(hosts_sorted) / 2, "Hosts", fontsize=12, color="red", ha="center", va="center", rotation=90)
     
-    # Add a title
-    plt.title(f"Bipartite Graph Visualization (Top {num_edges} Edges)", fontsize=14)
+    plt.suptitle(f"Bipartite Graph Visualization (Top {num_edges} Edges)", fontsize=16, y=0.97)
+
+
+    plt.text(-0.5, max_y / 2, "Guests", fontsize=14, color="skyblue", ha="center", va="center", rotation=90)
+    plt.text(1.5, max_y / 2, "Hosts", fontsize=14, color="red", ha="center", va="center", rotation=90)
+    plt.text(0.01, max_y + 0.2, "Guest Nodes", fontsize=12, color="black", ha="center")
+    plt.text(0.99, max_y + 0.2, "Host Nodes", fontsize=12, color="black", ha="center")
+
     
     save_path = f"data/{city}/graph_visualisation.png"
     # Save and show the plot
@@ -93,5 +120,5 @@ if __name__ == "__main__":
     cities= ["seattle","san-diego","san-francisco"]
     cities= ["san-francisco"]
     for city in cities:
-        guest_host = load_graph(city, "guest_host")
-        visualize_bipartite_graph(guest_host, 50)
+        guest_host = load_graph(city, "guest_host", None)
+        visualize_bipartite_graph(guest_host, 45)

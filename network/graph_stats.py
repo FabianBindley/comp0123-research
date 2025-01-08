@@ -9,7 +9,7 @@ from scipy.stats import linregress
 import pandas as pd
 
 
-def compute_and_plot_degree_distribution(graph, node_type, city):
+def compute_and_plot_degree_distribution(graph, node_type, city, network_type):
     # Get the degree of each node
     nodes = list(filter(lambda node: node[-1] == node_type, graph.nodes()))
     degrees = [graph.degree(n) for n in nodes]
@@ -27,11 +27,11 @@ def compute_and_plot_degree_distribution(graph, node_type, city):
     total_frequency = sum(y)
     y = [freq / total_frequency for freq in y]  # Convert to probabilities
 
-    plot_degree_distribution(x, y, node_type, city)
-    power_law_exponent, power_law_r2 = compute_power_law_coefficient_ccdf(graph, node_type, city)
+    plot_degree_distribution(x, y, node_type, city, network_type)
+    power_law_exponent, power_law_r2 = compute_power_law_coefficient_ccdf(graph, node_type, city, network_type)
     return round(power_law_exponent,4), round(power_law_r2,4)
 
-def plot_degree_distribution(x, y, node_type, city):
+def plot_degree_distribution(x, y, node_type, city, network_type):
     
     type_label = "guest" if node_type == "g" else "host"
     dist_type = "in" if node_type == "h" else "out"
@@ -51,7 +51,10 @@ def plot_degree_distribution(x, y, node_type, city):
     plt.legend(loc="best")
 
     # Save the plot
-    plt.savefig(f"data/{city}/{type_label.lower()}_{dist_type}_degree_distribution.png", format="png", dpi=300)
+    if not network_type:
+        plt.savefig(f"data/{city}/{type_label.lower()}_{dist_type}_degree_distribution.png", format="png", dpi=300)
+    else:
+        plt.savefig(f"data/{city}/{network_type}/{type_label.lower()}_{dist_type}_degree_distribution.png", format="png", dpi=300)
     plt.close()
 
 
@@ -83,7 +86,7 @@ def compute_ccdf(graph, node_type):
 
 
 
-def plot_ccdf(x, y, log_x, log_y, slope, intercept, r_squared, node_type, city):
+def plot_ccdf(x, y, log_x, log_y, slope, intercept, r_squared, node_type, city, network_type):
 
     type_label = "guest" if node_type == "g" else "host"
     dist_type = "in" if node_type == "h" else "out"
@@ -114,11 +117,14 @@ def plot_ccdf(x, y, log_x, log_y, slope, intercept, r_squared, node_type, city):
     plt.minorticks_off()  # Remove minor ticks
 
     # Save the plot
-    plt.savefig(f"data/{city}/{type_label.lower()}_{dist_type}_ccdf_fit.png", format="png", dpi=300)
+    if not network_type:
+         plt.savefig(f"data/{city}/{type_label.lower()}_{dist_type}_ccdf_fit.png", format="png", dpi=300)
+    else:
+        plt.savefig(f"data/{city}/{network_type}/{type_label.lower()}_{dist_type}_ccdf_fit.png", format="png", dpi=300)
     plt.close()
 
 
-def compute_power_law_coefficient_ccdf(graph, node_type, city):
+def compute_power_law_coefficient_ccdf(graph, node_type, city, network_type):
     
     degrees, ccdf = compute_ccdf(graph, node_type)
 
@@ -161,7 +167,7 @@ def compute_power_law_coefficient_ccdf(graph, node_type, city):
     # Compute R² for the goodness of fit
     r_squared = r_value ** 2
 
-    plot_ccdf(x, y, log_x_trimmed, log_y_trimmed, slope, intercept, r_squared, node_type, city)
+    plot_ccdf(x, y, log_x_trimmed, log_y_trimmed, slope, intercept, r_squared, node_type, city, network_type)
 
     print(f"Power-Law Exponent: {power_law_exponent:.4f}")
     print(f"R² Value: {r_squared:.4f}")
@@ -171,7 +177,7 @@ def compute_power_law_coefficient_ccdf(graph, node_type, city):
 
 
 
-def compute_hits_scores(city, graph, top_n):
+def compute_hits_scores(city, graph, top_n, network_type):
     # Compute HITS scores
     hubs, authorities = nx.hits(graph, normalized=True)
 
@@ -183,24 +189,37 @@ def compute_hits_scores(city, graph, top_n):
     top_guests = sorted(guest_hub_scores.items(), key=lambda x: x[1], reverse=True)[:top_n]
     top_hosts = sorted(host_authority_scores.items(), key=lambda x: x[1], reverse=True)[:top_n]
 
-    print(f"\nTop {top_n} Guests (Hubs) in {city}:")
-    for guest, score in top_guests:
-        # Get the hosts this guest is connected to
-        neighbors = list(graph.neighbors(guest))
-        connected_hosts = ', '.join(neighbors)  # Convert the list to a comma-separated string
-        print(f"{guest}: {score:.4f} | degree: {graph.degree(guest)} | connected to: {connected_hosts}")
+
+    if not network_type:
+        file_name = f"data/{city}/HITS_results.txt"
+    else:
+        file_name = f"data/{city}/{network_type}/HITS_results.txt"
+    with open(file_name, "w") as f:
+
+        print(f"\nTop {top_n} Guests (Hubs) in {city}:")
+        f.write(f"\nTop {top_n} Guests (Hubs) in {city}:\n")
+        for guest, score in top_guests:
+            # Get the hosts this guest is connected to
+            neighbors = list(graph.neighbors(guest))
+            connected_hosts = ', '.join(neighbors)  # Convert the list to a comma-separated string
+            output = f"{guest}: {score:.4f} | degree: {graph.degree(guest)} | connected to: {connected_hosts}"
+            print(output)
+            f.write(output+"\n")
 
 
-    print(f"\nTop {top_n} Hosts (Authorities) in {city}:")
-    for host, score in top_hosts:
-        print(f"{host}: {score:.4f} | degree: {graph.degree(host)}")
+        print(f"\nTop {top_n} Hosts (Authorities) in {city}:")
+        f.write(f"\nTop {top_n} Hosts (Authorities) in {city}:\n")
+        for host, score in top_hosts:
+            output = f"{host}: {score:.4f} | degree: {graph.degree(host)}"
+            print(output)
+            f.write(output+"\n")
 
     # Plot score distributions as line plots
-    plot_score_line(sorted(guest_hub_scores.values(), reverse=True), "Hub Scores", city, "guests")
-    plot_score_line(sorted(host_authority_scores.values(), reverse=True), "Authority Scores", city, "hosts")
+    plot_score_line(sorted(guest_hub_scores.values(), reverse=True), "Hub Scores", city, "guests", network_type)
+    plot_score_line(sorted(host_authority_scores.values(), reverse=True), "Authority Scores", city, "hosts", network_type)
 
 
-def plot_score_line(scores, score_type, city, node_type):
+def plot_score_line(scores, score_type, city, node_type, network_type):
     """
     Plot the sorted scores as a line chart.
     """
@@ -211,11 +230,14 @@ def plot_score_line(scores, score_type, city, node_type):
     plt.title(f"{city} | {node_type.capitalize()} {score_type} Distribution")
     plt.grid(visible=True, which="major", linestyle="--", linewidth=0.5)
     plt.tight_layout()
-    plt.savefig(f"data/{city}/{node_type}_{score_type.replace(' ', '_').lower()}_line_distribution.png", format="png", dpi=300)
+    if not network_type:
+        plt.savefig(f"data/{city}/{node_type}_{score_type.replace(' ', '_').lower()}_line_distribution.png", format="png", dpi=300)
+    else:
+        plt.savefig(f"data/{city}/{network_type}/{node_type}_{score_type.replace(' ', '_').lower()}_line_distribution.png", format="png", dpi=300)
     plt.close()
 
 
-def compute_guest_host_stats(city, graph, df):
+def compute_guest_host_stats(city, graph, df, network_type):
     print("=================================")
     print(city)
     print(f"Nodes: {graph.number_of_nodes()}")
@@ -262,17 +284,17 @@ def compute_guest_host_stats(city, graph, df):
     print(f"Max Edge Weight: {max(edge_weights)}")
 
     print("In Degree Distribution")
-    guest_power_law_exponent, guest_power_law_r2 = compute_and_plot_degree_distribution(graph, "g", city)
+    guest_power_law_exponent, guest_power_law_r2 = compute_and_plot_degree_distribution(graph, "g", city, network_type)
 
     print("Out Degree Distribution")
-    host_power_law_exponent, host_power_law_r2 = compute_and_plot_degree_distribution(graph, "h", city)
+    host_power_law_exponent, host_power_law_r2 = compute_and_plot_degree_distribution(graph, "h", city, network_type)
 
     superhosts = sum(1 for node in graph.nodes if node[-1] == "h" and graph.nodes[node]['host_is_superhost'] is True)
     superhosts_percent_hosts = superhosts/num_hosts * 100
 
     print(f"Superhosts: {superhosts} % of hosts: {superhosts_percent_hosts}")
     
-    compute_hits_scores(city, graph, 30)
+    compute_hits_scores(city, graph, 30, network_type)
     clustering_coefficients = bipartite.clustering(graph)
     max_clustering_coefficient = max(clustering_coefficients.values())
     print(f"Max Clustering coefficient: {max_clustering_coefficient}")
@@ -281,12 +303,18 @@ def compute_guest_host_stats(city, graph, df):
 
 
 if __name__ == "__main__":
+    # None, barabasi_albert, superguest 
+    network_type = "superguest"
+    #network_type = None
+
     df = pd.DataFrame(columns=['city','num_nodes','guests','hosts','edges','mean_host_in_degree','median_host_in_degree','max_host_in_degree','mean_guest_out_degree','median_guest_out_degree','max_guest_out_degree','mean_edge_weight','edges_weight_greater_1','guest_power_law_exponent','guest_power_law_r2','host_power_law_exponent','host_power_law_r2', 'superhosts', 'superhosts_percent_hosts', 'max_clustering_coefficient'])
-    cities= ["san-francisco","san-diego","seattle","london",]
+    cities= ["san-francisco","san-diego","seattle",]
     #cities= ["san-francisco"]
     for city in cities:
-        guest_host = load_graph(city, "guest_host")
-        compute_guest_host_stats(city, guest_host, df)
+        guest_host = load_graph(city, "guest_host", network_type)
+        compute_guest_host_stats(city, guest_host, df, network_type)
 
-
-    df.to_csv("data/stats_output.csv", encoding='utf-8', index=False)
+    if not network_type:
+        df.to_csv("data/stats_output.csv", encoding='utf-8', index=False)
+    else:
+        df.to_csv(f"data/{network_type}_stats_output.csv", encoding='utf-8', index=False)
