@@ -129,7 +129,7 @@ def analyse_stay_probabilities(city, stay_probabilities):
     plt.hist(stay_probabilities["P_rand"], bins=100, alpha=0.7, label="P_rand (Random)", color="orange")
     plt.xlabel("Probability")
     plt.ylabel("Frequency (Log Scale)")
-    plt.title(f"Host Selection Probability Distributions in {city}")
+    plt.title(f"Empirical Host Selection Probability Distributions in {city}")
     plt.yscale('log')  # Set y-axis to logarithmic scale
     plt.legend()
     plt.grid(visible=True, which="both", linestyle="--", linewidth=0.5)  # Major and minor grid lines
@@ -147,7 +147,7 @@ def analyse_stay_probabilities(city, stay_probabilities):
     plt.plot(temporal_means.index, temporal_means["P_rand"], label="P_rand (Random)", color="orange")
     plt.xlabel("Date")
     plt.ylabel("Average Probability")
-    plt.title(f"Temporal Trends in Stay Probabilities - {city}")
+    plt.title(f"Empirical Temporal Trends in Stay Probabilities - {city}")
     plt.legend()
     plt.grid()
     plt.savefig(f"data/{city}/temporal/trends_probability_distributions.png", format="png", dpi=300)
@@ -166,7 +166,7 @@ def analyse_stay_probabilities(city, stay_probabilities):
     plt.plot(low_prob_means.index, low_prob_means["P_rand"], label=f"P_rand < {X}", color="orange")
     plt.xlabel("Date")
     plt.ylabel("Average Probability")
-    plt.title(f"Temporal Trends in Stay Probabilities (P < {X}) - {city}")
+    plt.title(f"Empirical Temporal Trends in Stay Probabilities (P < {X}) - {city}")
     plt.legend()
     plt.grid()
     plt.savefig(f"data/{city}/temporal/trends_low_probabilities.png", format="png", dpi=300)
@@ -214,7 +214,7 @@ def analyse_stay_probabilities(city, stay_probabilities):
     # Labels, title, and grid
     plt.xlabel("P_rand (Random Probability)")
     plt.ylabel("P_deg (Degree-Based Probability)")
-    plt.title(f"P_deg vs P_rand in {city}")
+    plt.title(f"Empirical P_deg against P_rand in {city}")
     plt.legend(loc="center right") 
     plt.grid()
 
@@ -255,12 +255,8 @@ def print_graph(graph):
 
 
 if __name__ == "__main__":
-    cities= ["london","seattle","san-diego","san-francisco"]
-    #cities= ["seattle","san-diego","san-francisco"]
-    #cities= ["seattle","san-diego","san-francisco"]
-    #cities= ["seattle","san-diego"]
-    cities= ["san-francisco"]
-    #cities= ["london"]
+    cities= ["seattle","san-diego","san-francisco"]
+    
     compute_stay_probabilities = False
     print(datetime.now())
     for city in cities:

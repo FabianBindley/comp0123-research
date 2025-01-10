@@ -8,7 +8,7 @@ import random
 def edge_sampling_bounded(graph, num_edges, host_lower_bound, host_upper_bound, guest_lower_bound, guest_upper_bound):
     
 
-    # Step 1: Filter hosts  and guests based on degree bounds
+    # Filter hosts  and guests based on degree bounds
     eligible_hosts = [
         node for node in graph.nodes()
         if node.endswith("_h") and host_lower_bound <= graph.in_degree(node) <= host_upper_bound
@@ -22,7 +22,7 @@ def edge_sampling_bounded(graph, num_edges, host_lower_bound, host_upper_bound, 
     print(len(eligible_hosts))
     print(len(eligible_guests))
 
-    # Step 2: Get all edges connected to the eligible hosts
+    # Get all edges connected to the eligible hosts
     candidate_edges = []
     for edge in graph.edges():
         if edge[0] in eligible_guests and edge[1] in eligible_hosts:
@@ -30,14 +30,15 @@ def edge_sampling_bounded(graph, num_edges, host_lower_bound, host_upper_bound, 
         if len(candidate_edges) == num_edges:
             break
     
-    # Step 3: Sort edges by host ID to group edges by hosts
+    # Sort edges by host ID to group edges by hosts
     candidate_edges = sorted(candidate_edges, key=lambda edge: edge[1])
 
     # Limit the number of edges to num_edges
     limited_edges = candidate_edges[:num_edges]
+    #random.shuffle(limited_edges)
 
 
-    # Step 4: Create a new graph with the sampled edges
+    # Create a new graph with the sampled edges
     sampled_graph = nx.DiGraph()  # Assuming the input graph is directed
     sampled_graph.add_edges_from(limited_edges)
     print("Generated Graph")
@@ -49,7 +50,7 @@ def visualize_bipartite_graph(graph, num_edges):
 
 
     # Perform sampling based on degree
-    sampled_graph = edge_sampling_bounded(graph, num_edges, 5, 15, 1, 25)
+    sampled_graph = edge_sampling_bounded(graph, num_edges, 10, 300, 1, 25)
 
     
     # Separate the two sets (guests and hosts)
@@ -100,7 +101,7 @@ def visualize_bipartite_graph(graph, num_edges):
     plt.text(-0.2, len(guests) / 2, "Guests", fontsize=12, color="skyblue", ha="center", va="center", rotation=90)
     plt.text(1.2, len(hosts_sorted) / 2, "Hosts", fontsize=12, color="red", ha="center", va="center", rotation=90)
     
-    plt.suptitle(f"Bipartite Graph Visualization (Top {num_edges} Edges)", fontsize=16, y=0.97)
+    plt.suptitle(f"Bipartite Graph Visualization ({num_edges} Stays)", fontsize=16, y=0.97)
 
 
     plt.text(-0.5, max_y / 2, "Guests", fontsize=14, color="skyblue", ha="center", va="center", rotation=90)
@@ -117,8 +118,7 @@ def visualize_bipartite_graph(graph, num_edges):
 
 if __name__ == "__main__":
     cities= ["london","seattle","san-diego","san-francisco"]
-    cities= ["seattle","san-diego","san-francisco"]
-    cities= ["san-francisco"]
+
     for city in cities:
         guest_host = load_graph(city, "guest_host", None)
-        visualize_bipartite_graph(guest_host, 45)
+        visualize_bipartite_graph(guest_host, 80)

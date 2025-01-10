@@ -60,14 +60,14 @@ def generate_superguest_network(city, superguests, graph):
     pickle.dump(guest_host, open(f"data/{city}/superguest/guest_host.pickle", "wb"))
 
 if __name__ == "__main__":
-    cities= ["san-francisco","san-diego","seattle","london",]
-    #cities= ["san-francisco"]
+    cities= ["san-francisco","san-diego","seattle"]
+
     for city in cities:
         network_type = None
         guest_host = load_graph(city, "guest_host", network_type)
     
         #superguests = select_superguests(city, guest_host, num_superguests=None, percentile=99.9, min_degree=None)
         #superguests = select_superguests(city, guest_host, num_superguests=None, percentile=99.9, min_degree=None)
-        superguests = select_superguests(city, guest_host, num_superguests=200, percentile=None, min_degree=None)
-
+        print(city)
+        superguests = select_superguests(city, guest_host, num_superguests=None, percentile=99.9, min_degree=None)
         superguest_network = generate_superguest_network(city, superguests, guest_host)

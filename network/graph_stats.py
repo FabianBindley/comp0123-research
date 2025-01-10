@@ -44,7 +44,7 @@ def plot_degree_distribution(x, y, node_type, city, network_type):
     plt.yscale("log")
     plt.xlabel("Degree k")  # Normal axis label
     plt.ylabel("Degree Probability P(k)")  # Normal axis label
-    plt.title(f"{city} | {type_label.capitalize()} {dist_type.capitalize()}-Degree Distribution")
+    plt.title(f"{city} | {type_label.capitalize()} {dist_type}-degree distribution log-log plot")
 
     # Grid only for major ticks
     plt.grid(True, which="major", linestyle="--", linewidth=0.5)
@@ -111,7 +111,7 @@ def plot_ccdf(x, y, log_x, log_y, slope, intercept, r_squared, node_type, city, 
     plt.yscale('log')
     plt.xlabel('Degree (k)')
     plt.ylabel('P(K >= k) (CCDF)')
-    plt.title(f'{city} | {type_label.capitalize()} {dist_type.capitalize()}-Degree CCDF')
+    plt.title(f'{city} | {type_label.capitalize()} {dist_type}-degree CCDF log-log plot')
     plt.legend(loc='best')  # Add legend with location
     plt.grid(visible=True, which="major", linestyle="-", linewidth=0.5)
     plt.minorticks_off()  # Remove minor ticks
@@ -128,21 +128,17 @@ def compute_power_law_coefficient_ccdf(graph, node_type, city, network_type):
     
     degrees, ccdf = compute_ccdf(graph, node_type)
 
-    # Step 2: Convert to numpy arrays
+
     x = np.array(degrees)
     y = np.array(ccdf)
-
-    # Step 3: Remove zero or near-zero values (log(0) is undefined)
     mask = (x > 0) & (y > 0)
     x_filtered = x[mask]
     y_filtered = y[mask]
 
-    # Step 4: Log-log transformation
+
     log_x = np.log(x_filtered)
     log_y = np.log(y_filtered)
 
-    # Step 5: Focus on the linear portion (truncate small noisy degrees)
-    # Step 5: Focus on the linear portion (truncate small noisy degrees)
     min_degree = 1
     max_log_k = 4  # Upper bound for log(k)
 
@@ -158,13 +154,10 @@ def compute_power_law_coefficient_ccdf(graph, node_type, city, network_type):
     log_y_polyfit_trimmed = log_y[valid_mask]
 
 
-    # Step 6: Perform linear regression on log-log data
     slope, intercept, r_value, _, _ = linregress(log_x_polyfit_trimmed, log_y_polyfit_trimmed)
 
-    # Compute the power-law exponent
     power_law_exponent = 1-slope  # Negative slope corresponds to exponent
 
-    # Compute R² for the goodness of fit
     r_squared = r_value ** 2
 
     plot_ccdf(x, y, log_x_trimmed, log_y_trimmed, slope, intercept, r_squared, node_type, city, network_type)
@@ -308,8 +301,8 @@ if __name__ == "__main__":
     #network_type = None
 
     df = pd.DataFrame(columns=['city','num_nodes','guests','hosts','edges','mean_host_in_degree','median_host_in_degree','max_host_in_degree','mean_guest_out_degree','median_guest_out_degree','max_guest_out_degree','mean_edge_weight','edges_weight_greater_1','guest_power_law_exponent','guest_power_law_r2','host_power_law_exponent','host_power_law_r2', 'superhosts', 'superhosts_percent_hosts', 'max_clustering_coefficient'])
-    cities= ["san-francisco","san-diego","seattle",]
-    #cities= ["san-francisco"]
+    cities= ["san-diego","san-francisco","seattle"]
+
     for city in cities:
         guest_host = load_graph(city, "guest_host", network_type)
         compute_guest_host_stats(city, guest_host, df, network_type)

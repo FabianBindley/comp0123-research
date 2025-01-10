@@ -16,11 +16,6 @@ def generate_guest_host(city):
     # Merge the listings and reviews DataFrames
     stays = pd.merge(reviews, listings, on='listing_id', how='inner')
 
-    # Limit to 100 stays
-    #stays = stays[:100]
-    #stays = stays.sample(frac=1)
-    #stays = stays[:20]
-
     # Iterate over the stays and generate the Guest - Host graph
     # Nodes have id: guest_id, host_id 
     guest_host = nx.DiGraph()
@@ -79,5 +74,5 @@ if __name__ == "__main__":
         print(city)
         generate_guest_host(city)
         guest_host = load_graph(city, "guest_host")
-        print_graph(guest_host)
+        #print_graph(guest_host)
         export_graphml(city, "guest_host", guest_host)

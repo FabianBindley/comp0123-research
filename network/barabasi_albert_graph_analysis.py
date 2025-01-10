@@ -27,47 +27,7 @@ def host_degrees_on_date(graph, host_degrees_on_date, date, alpha, the_host):
     host_degrees_on_date[date] = k_hosts_on_date
     return k_hosts_on_date
 
-def generate_ba_network(num_nodes, num_edges, start_nodes, start_edges):
 
-    print(f"Generating BA network {num_nodes} {num_edges}")
-    G = generate_random_network(start_nodes,start_edges)
-
-    # Initial graph is connected but not fully connected
-    # Create a list of all nodes, the node appears in the list as many times as its degree
-    pref_attachment_list = []
-    for node in G.nodes:
-        pref_attachment_list.extend([node] * G.degree[node])
-        
-
-    m = (num_edges-start_edges) // (num_nodes - start_nodes)
-    for new_node in range(start_nodes, num_nodes):
-
-        target_nodes = set()
-        while len(target_nodes) < m:
-            target = random.choice(pref_attachment_list)
-            target_nodes.add(target)
-        
-        G.add_node(new_node)
-
-        for target in target_nodes:
-            G.add_edge(new_node, target)
-            pref_attachment_list.extend([target, new_node])
-    
-
-    # Step 4: Add remaining edges (if needed)
-    remaining_edges = num_edges - G.number_of_edges()
-    if remaining_edges > 0:
-        possible_edges = [
-            (u, v) for u in G.nodes for v in G.nodes if u != v and not G.has_edge(u, v)
-        ]
-        random.shuffle(possible_edges)
-        for u, v in possible_edges[:remaining_edges]:
-            G.add_edge(u, v)
-    
-
-    # Validate and return
-    print(f"Final BA graph: {G.number_of_nodes()} nodes, {G.number_of_edges()} edges")
-    return G
 
 def generate_random_temporal_ba_guest_host_network(start_num_hosts, start_num_stays, stays, listings):
 
@@ -247,7 +207,6 @@ def generate_guest_host_barabasi_albert(city, alpha, load_degrees_by_date):
 def edge_sampling_bounded(graph, num_edges, host_lower_bound, host_upper_bound, guest_lower_bound, guest_upper_bound):
     
 
-    # Step 1: Filter hosts  and guests based on degree bounds
     eligible_hosts = [
         node for node in graph.nodes()
         if node.endswith("_h") and host_lower_bound <= graph.in_degree(node) <= host_upper_bound
@@ -261,7 +220,6 @@ def edge_sampling_bounded(graph, num_edges, host_lower_bound, host_upper_bound, 
     print(len(eligible_hosts))
     print(len(eligible_guests))
 
-    # Step 2: Get all edges connected to the eligible hosts
     candidate_edges = []
     for edge in graph.edges():
         if edge[0] in eligible_guests and edge[1] in eligible_hosts:
@@ -270,11 +228,8 @@ def edge_sampling_bounded(graph, num_edges, host_lower_bound, host_upper_bound, 
             break
     
     limited_edges = candidate_edges
-    #limited_edges = candidate_edges[:num_edges]
 
-
-    # Step 4: Create a new graph with the sampled edges
-    sampled_graph = nx.DiGraph()  # Assuming the input graph is directed
+    sampled_graph = nx.DiGraph() 
     sampled_graph.add_edges_from(limited_edges)
     print("Generated Graph")
     return sampled_graph
@@ -388,17 +343,17 @@ def analyse_stay_probabilities(city, stay_probabilities):
     stay_probabilities_filtered = stay_probabilities[stay_probabilities["P_rand"] != stay_probabilities["P_rand"].max()]
 
     # Normalize timestamps for color mapping
-    norm = plt.Normalize(vmin=timestamps.min(), vmax=timestamps.max())  # Explicitly set vmin and vmax
-    colors = stay_probabilities_filtered["date"].apply(lambda x: x.timestamp())  # Use filtered timestamps directly for colormapping
+    norm = plt.Normalize(vmin=timestamps.min(), vmax=timestamps.max())  
+    colors = stay_probabilities_filtered["date"].apply(lambda x: x.timestamp()) 
 
     # Plot scatterplot
     plt.figure(figsize=(8, 6))
     scatter = plt.scatter(
         stay_probabilities_filtered["P_rand"],
         stay_probabilities_filtered["P_deg"],
-        c=colors,  # Pass filtered timestamps directly as c
-        cmap="plasma",  # Explicitly specify the colormap
-        norm=norm,      # Match normalization to c
+        c=colors, 
+        cmap="plasma",  
+        norm=norm,  
         alpha=0.6,
         label="Stays",
     )

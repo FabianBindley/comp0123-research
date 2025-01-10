@@ -123,21 +123,18 @@ def compute_power_law_coefficient_ccdf(graph, node_type, city):
     
     degrees, ccdf = compute_ccdf(graph, node_type)
 
-    # Step 2: Convert to numpy arrays
+  
     x = np.array(degrees)
     y = np.array(ccdf)
 
-    # Step 3: Remove zero or near-zero values (log(0) is undefined)
     mask = (x > 0) & (y > 0)
     x_filtered = x[mask]
     y_filtered = y[mask]
 
-    # Step 4: Log-log transformation
     log_x = np.log(x_filtered)
     log_y = np.log(y_filtered)
 
-    # Step 5: Focus on the linear portion (truncate small noisy degrees)
-    # Step 5: Focus on the linear portion (truncate small noisy degrees)
+
     min_degree = 1
     max_log_k = 4  # Upper bound for log(k)
 
@@ -153,13 +150,12 @@ def compute_power_law_coefficient_ccdf(graph, node_type, city):
     log_y_polyfit_trimmed = log_y[valid_mask]
 
 
-    # Step 6: Perform linear regression on log-log data
     slope, intercept, r_value, _, _ = linregress(log_x_polyfit_trimmed, log_y_polyfit_trimmed)
 
-    # Compute the power-law exponent
+  
     power_law_exponent = 1-slope  # Negative slope corresponds to exponent
 
-    # Compute R² for the goodness of fit
+
     r_squared = r_value ** 2
 
     plot_ccdf(x, y, log_x_trimmed, log_y_trimmed, slope, intercept, r_squared, node_type, city)
