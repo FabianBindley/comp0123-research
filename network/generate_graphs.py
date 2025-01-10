@@ -66,6 +66,7 @@ def export_graphml(city, type, graph):
 
 
 if __name__ == "__main__":
+    # Please ensure that the listings.csv and reviews.csv have been added to the city's data/ directory before running.
     cities= ["seattle","san-diego","san-francisco"]
     for city in cities:
         print(city)
