@@ -66,13 +66,9 @@ def export_graphml(city, type, graph):
 
 
 if __name__ == "__main__":
-    cities= ["london","seattle","san-diego","san-francisco"]
-    cities= ["san-diego","san-francisco"]
-    #cities= ["seattle","san-diego","san-francisco"]
-    #cities= ["san-francisco"]
+    cities= ["seattle","san-diego","san-francisco"]
     for city in cities:
         print(city)
         generate_guest_host(city)
-        guest_host = load_graph(city, "guest_host")
-        #print_graph(guest_host)
+        guest_host = load_graph(city, "guest_host", None)
         export_graphml(city, "guest_host", guest_host)
