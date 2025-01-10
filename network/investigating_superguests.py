@@ -65,9 +65,9 @@ if __name__ == "__main__":
     for city in cities:
         network_type = None
         guest_host = load_graph(city, "guest_host", network_type)
-    
-        #superguests = select_superguests(city, guest_host, num_superguests=None, percentile=99.9, min_degree=None)
-        #superguests = select_superguests(city, guest_host, num_superguests=None, percentile=99.9, min_degree=None)
         print(city)
+        #superguests = select_superguests(city, guest_host, num_superguests=200, percentile=None, min_degree=None)
+        #superguests = select_superguests(city, guest_host, num_superguests=None, percentile=None, min_degree=20)
+
         superguests = select_superguests(city, guest_host, num_superguests=None, percentile=99.9, min_degree=None)
         superguest_network = generate_superguest_network(city, superguests, guest_host)
