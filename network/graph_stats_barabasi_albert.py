@@ -270,8 +270,7 @@ def load_graph(city, type):
 
 if __name__ == "__main__":
     df = pd.DataFrame(columns=['city','num_nodes','guests','hosts','edges','mean_host_in_degree','median_host_in_degree','max_host_in_degree','mean_guest_out_degree','median_guest_out_degree','max_guest_out_degree','guest_power_law_exponent','guest_power_law_r2','host_power_law_exponent','host_power_law_r2',  'max_clustering_coefficient'])
-    cities= ["san-francisco","san-diego","seattle","london",]
-    cities= ["san-francisco"]
+    cities= ["san-francisco","san-diego","seattle"]
     for city in cities:
         guest_host = load_graph(city, "guest_host")
         compute_guest_host_stats(city, guest_host, df)
