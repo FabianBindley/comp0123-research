@@ -16,3 +16,6 @@ You may need to change the run configurations to select which cities you are ana
    cities= ["seattle","san-diego","san-francisco"]
 ```
 By default, we assume that you have generated guest-host graphs for the 3 cities above.
+
+5) To investigate the temporal graphs, barabasi albert, and superguest - please generate them with their respective analysis scripts.
+6) Barabasi-albert and superguest graphs can have their stats computed in graph_stats.py, by setting their network_type to "barabasi_albert" or "superguest"
