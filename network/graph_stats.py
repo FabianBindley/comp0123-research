@@ -297,8 +297,7 @@ def compute_guest_host_stats(city, graph, df, network_type):
 
 if __name__ == "__main__":
     # None, barabasi_albert, superguest 
-    network_type = "superguest"
-    #network_type = None
+    network_type = None
 
     df = pd.DataFrame(columns=['city','num_nodes','guests','hosts','edges','mean_host_in_degree','median_host_in_degree','max_host_in_degree','mean_guest_out_degree','median_guest_out_degree','max_guest_out_degree','mean_edge_weight','edges_weight_greater_1','guest_power_law_exponent','guest_power_law_r2','host_power_law_exponent','host_power_law_r2', 'superhosts', 'superhosts_percent_hosts', 'max_clustering_coefficient'])
     cities= ["san-diego","san-francisco","seattle"]
