@@ -117,7 +117,7 @@ def visualize_bipartite_graph(graph, num_edges):
 
 
 if __name__ == "__main__":
-    cities= ["london","seattle","san-diego","san-francisco"]
+    cities= ["seattle","san-diego","san-francisco"]
 
     for city in cities:
         guest_host = load_graph(city, "guest_host", None)
